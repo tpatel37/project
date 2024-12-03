@@ -1,11 +1,16 @@
 <?php
 require_once 'db_config.php'; // Database connection
 
-// Number of results per page (N)
+// Number of results per page
 $results_per_page = 5;
 
-// Get the current page from the URL, default is 1
+// Get the current page from the URL, default to 1
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
+
+// Ensure the page is at least 1
+if ($page < 1) {
+    $page = 1;
+}
 
 // Calculate the offset for the SQL query
 $offset = ($page - 1) * $results_per_page;
@@ -27,6 +32,9 @@ if ($query) {
     $total_results = $result->fetch_assoc()['total'];
     $stmt->close();
 
+    // Debug: Output total results
+    //echo "Total Results: $total_results<br>";
+
     // Prepare the SQL query to fetch paginated results
     $stmt = $conn->prepare("SELECT id, title, file_path FROM pages WHERE title LIKE ? OR content LIKE ? LIMIT ? OFFSET ?");
     $stmt->bind_param("ssii", $searchTerm, $searchTerm, $results_per_page, $offset);
@@ -41,6 +49,9 @@ if ($query) {
 
 // Calculate the total number of pages
 $total_pages = ceil($total_results / $results_per_page);
+
+// Debug: Output total pages
+//echo "Total Pages: $total_pages<br>";
 ?>
 
 <!DOCTYPE html>
@@ -50,17 +61,19 @@ $total_pages = ceil($total_results / $results_per_page);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Results</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
 <body>
+<?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h1>Search Results for "<?php echo htmlspecialchars($query); ?>"</h1>
 
         <?php if (!empty($pages)): ?>
             <ul class="list-group mb-4">
-                <?php foreach ($pages as $page): ?>
+                <?php foreach ($pages as $page_data): ?>
                     <li class="list-group-item">
-                        <a href="<?php echo htmlspecialchars($page['file_path']); ?>">
-                            <?php echo htmlspecialchars($page['title']); ?>
+                        <a href="<?php echo htmlspecialchars($page_data['file_path']); ?>">
+                            <?php echo htmlspecialchars($page_data['title']); ?>
                         </a>
                     </li>
                 <?php endforeach; ?>
@@ -94,6 +107,8 @@ $total_pages = ceil($total_results / $results_per_page);
         <?php else: ?>
             <p>No pages found matching your query.</p>
         <?php endif; ?>
+
+        <p class="mt-3">Page <?php echo $page; ?> of <?php echo $total_pages; ?> (Total Results: <?php echo $total_results; ?>)</p>
     </div>
 </body>
 </html>

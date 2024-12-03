@@ -5,9 +5,10 @@ ini_set('display_errors', 1);
 include 'db_config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = trim($_POST['name'] ?? '');
-    $username = trim($_POST['username'] ?? '');
-    $phone = trim($_POST['phone'] ?? '');
+    // Sanitize inputs
+    $name = htmlspecialchars(trim($_POST['name'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $username = htmlspecialchars(trim($_POST['username'] ?? ''), ENT_QUOTES, 'UTF-8');
+    $phone = htmlspecialchars(trim($_POST['phone'] ?? ''), ENT_QUOTES, 'UTF-8');
     $password = trim($_POST['password'] ?? '');
     $confirm_password = trim($_POST['confirm_password'] ?? '');
 
@@ -19,6 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($password)) $errors[] = "Password is required.";
     if (empty($confirm_password)) $errors[] = "Confirm Password is required.";
 
+    // Validate phone number (numericality check)
+    if (!empty($phone) && !preg_match('/^\d+$/', $phone)) {
+        $errors[] = "Phone must contain only numbers.";
+    }
+
     // Validate password matching
     if ($password !== $confirm_password) {
         $errors[] = "Passwords do not match.";
@@ -29,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die("Error: " . implode(", ", $errors));
     }
 
-    // Check for duplicate username
+    // Check for duplicate username securely
     $check_sql = "SELECT 1 FROM users WHERE username = ?";
     $check_stmt = $conn->prepare($check_sql);
 
@@ -48,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Hash the password securely using password_hash
     $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-    // Insert new user
+    // Insert new user securely
     $sql = "INSERT INTO users (name, username, phone, password) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
 
@@ -59,15 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bind_param("ssss", $name, $username, $phone, $hashed_password);
 
     if ($stmt->execute()) {
+        // Redirect to success page on successful registration
         header("Location: success.php");
         exit();
     } else {
         echo "Error: " . $stmt->error;
     }
 
+    // Close statement handles
     $stmt->close();
     $check_stmt->close();
 }
 
+// Close database connection
 $conn->close();
 ?>
