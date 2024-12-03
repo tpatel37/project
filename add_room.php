@@ -4,7 +4,7 @@ include 'db_config.php'; // Include database configuration
 session_start();
 
 // Check if the admin is logged in
-if (!isset($_SESSION['admin_id'])) {
+if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
     header("Location: admin_login.php");
     exit();
 }

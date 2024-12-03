@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// Redirect if a message parameter is present to clean up the URL
+if (isset($_GET['message'])) {
+    header("Location: manage_reviews.php");
+    exit();
+}
+
 // File to store reviews
 $review_file = 'reviews.json';
 
@@ -38,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Save the updated reviews
     file_put_contents($review_file, json_encode($reviews, JSON_PRETTY_PRINT));
-    header("Location: manage_reviews.php?message=Action performed successfully.");
+    header("Location: manage_reviews.php");
     exit();
 }
 ?>
@@ -49,9 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <h1>Review Moderation</h1>
-    <?php if (isset($_GET['message'])): ?>
-        <p><?php echo htmlspecialchars($_GET['message']); ?></p>
-    <?php endif; ?>
     <table border="1">
         <thead>
             <tr>

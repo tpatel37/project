@@ -1,9 +1,10 @@
 <?php include 'navbar.php'; ?>
-<?php if (isset($_GET['message'])): ?>
-    <div class="alert alert-success text-center">
-        <?php echo htmlspecialchars($_GET['message']); ?>
-    </div>
-<?php endif; ?>
+<?php
+if (isset($_GET['message'])) {
+    header("Location: index.php");
+    exit();
+}
+?>
 
 
 
@@ -400,8 +401,8 @@
 </div>
 <!-- Reviews Section -->
 <h2 class="mt-4 pt-4 mb-4 text-center fw-bold h-font">Reviews</h2>
-<div class="container">
-    <div class="swiper swiper-testimonials">
+<div class="container" style="max-width: 600px;"> <!-- Restrict container width -->
+    <div class="swiper swiper-testimonials" style="height: 200px;"> <!-- Limit Swiper height -->
         <div class="swiper-wrapper">
             <?php
             // Path to the reviews file
@@ -415,27 +416,27 @@
                 $visible_reviews = array_filter($reviews, fn($review) => $review['status'] === 'visible');
 
                 if (!empty($visible_reviews)) {
-                    // Loop through visible reviews
-                    foreach (array_reverse($visible_reviews) as $review) { // Latest reviews first
-                        echo '<div class="swiper-slide bg-white p-4">';
-                        echo '<p>' . htmlspecialchars($review['review']) . '</p>'; // Display the review text
-                        echo '<div class="rating">';
-                        echo '<i class="bi bi-star-fill text-warning"></i>';
-                        echo '<i class="bi bi-star-fill text-warning"></i>';
-                        echo '<i class="bi bi-star-fill text-warning"></i>';
-                        echo '<i class="bi bi-star-fill text-warning"></i>';
-                        echo '<i class="bi bi-star-fill text-warning"></i>';
+                    $visible_reviews = array_slice(array_reverse($visible_reviews), 0, 5); // Limit to 5 reviews
+                    foreach ($visible_reviews as $review) {
+                        echo '<div class="swiper-slide bg-light p-2 rounded shadow-sm" style="height: 150px;">'; // Limit slide height
+                        echo '<p class="small text-muted mb-2">' . htmlspecialchars($review['review']) . '</p>';
+                        echo '<div class="rating mt-1">';
+                        echo '<i class="bi bi-star-fill text-warning small"></i>';
+                        echo '<i class="bi bi-star-fill text-warning small"></i>';
+                        echo '<i class="bi bi-star-fill text-warning small"></i>';
+                        echo '<i class="bi bi-star-fill text-warning small"></i>';
+                        echo '<i class="bi bi-star-fill text-warning small"></i>';
                         echo '</div>';
                         echo '</div>';
                     }
                 } else {
-                    echo '<div class="swiper-slide bg-white p-4">';
-                    echo '<p>No reviews available. Be the first to leave a review!</p>';
+                    echo '<div class="swiper-slide bg-light p-2 rounded shadow-sm">';
+                    echo '<p class="small text-muted">No reviews available. Be the first to leave a review!</p>';
                     echo '</div>';
                 }
             } else {
-                echo '<div class="swiper-slide bg-white p-4">';
-                echo '<p>No reviews available. Be the first to leave a review!</p>';
+                echo '<div class="swiper-slide bg-light p-2 rounded shadow-sm">';
+                echo '<p class="small text-muted">No reviews available. Be the first to leave a review!</p>';
                 echo '</div>';
             }
             ?>
@@ -445,6 +446,7 @@
         <div class="swiper-pagination"></div>
     </div>
 </div>
+
 
 
 
